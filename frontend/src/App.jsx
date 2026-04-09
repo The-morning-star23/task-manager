@@ -9,6 +9,10 @@ function App() {
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  const [filter, setFilter] = useState('all');
+  const [editingId, setEditingId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
 
   useEffect(() => {
     fetchTasks();
@@ -20,7 +24,7 @@ function App() {
     try {
       const response = await axios.get(API_URL);
       setTasks(response.data);
-    } catch (err) {
+    } catch {
       setError('Failed to fetch tasks.');
     } finally {
       setLoading(false);
@@ -37,7 +41,7 @@ function App() {
       const response = await axios.post(API_URL, { title });
       setTasks([...tasks, response.data]);
       setTitle('');
-    } catch (err) {
+    } catch {
       setError('Failed to add task.');
     } finally {
       setLoading(false);
@@ -49,7 +53,7 @@ function App() {
     try {
       const response = await axios.patch(`${API_URL}/${id}`, { completed: !currentStatus });
       setTasks(tasks.map(task => task.id === id ? response.data : task));
-    } catch (err) {
+    } catch {
       setError('Failed to update task.');
     }
   };
@@ -59,10 +63,36 @@ function App() {
     try {
       await axios.delete(`${API_URL}/${id}`);
       setTasks(tasks.filter(task => task.id !== id));
-    } catch (err) {
+    } catch {
       setError('Failed to delete task.');
     }
   };
+
+  const startEditing = (task) => {
+    setEditingId(task.id);
+    setEditTitle(task.title);
+  };
+
+  const saveEdit = async (id) => {
+    if (!editTitle.trim()) {
+      setEditingId(null);
+      return;
+    }
+    setError(null);
+    try {
+      const response = await axios.patch(`${API_URL}/${id}`, { title: editTitle });
+      setTasks(tasks.map(task => task.id === id ? response.data : task));
+      setEditingId(null);
+    } catch {
+      setError('Failed to update task.');
+    }
+  };
+
+  const filteredTasks = tasks.filter(task => {
+    if (filter === 'completed') return task.completed;
+    if (filter === 'incomplete') return !task.completed;
+    return true;
+  });
 
   return (
     <div className="container">
@@ -79,16 +109,40 @@ function App() {
         <button type="submit" disabled={loading}>Add Task</button>
       </form>
 
+      <div className="filters">
+        <button className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}>All</button>
+        <button className={filter === 'incomplete' ? 'active' : ''} onClick={() => setFilter('incomplete')}>Active</button>
+        <button className={filter === 'completed' ? 'active' : ''} onClick={() => setFilter('completed')}>Completed</button>
+      </div>
+
       {error && <div className="error">{error}</div>}
       {loading && tasks.length === 0 && <div className="loading">Loading tasks...</div>}
 
       <ul className="task-list">
-        {tasks.map(task => (
+        {filteredTasks.map(task => (
           <li key={task.id} className={task.completed ? 'completed' : ''}>
-            <span onClick={() => toggleComplete(task.id, task.completed)}>
-              {task.title}
-            </span>
-            <button onClick={() => deleteTask(task.id)} className="delete-btn">Delete</button>
+            {editingId === task.id ? (
+              <div className="edit-mode">
+                <input 
+                  type="text" 
+                  value={editTitle} 
+                  onChange={(e) => setEditTitle(e.target.value)} 
+                  autoFocus
+                />
+                <button onClick={() => saveEdit(task.id)} className="save-btn">Save</button>
+                <button onClick={() => setEditingId(null)} className="cancel-btn">Cancel</button>
+              </div>
+            ) : (
+              <>
+                <span onClick={() => toggleComplete(task.id, task.completed)}>
+                  {task.title}
+                </span>
+                <div className="actions">
+                  <button onClick={() => startEditing(task)} className="edit-btn">Edit</button>
+                  <button onClick={() => deleteTask(task.id)} className="delete-btn">Delete</button>
+                </div>
+              </>
+            )}
           </li>
         ))}
       </ul>

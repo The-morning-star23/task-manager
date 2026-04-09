@@ -61,3 +61,59 @@ h1 {
 .delete-btn:hover {
   background: #c82333;
 }
+
+.filters {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+.filters button {
+  padding: 5px 10px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: white;
+  border-radius: 4px;
+}
+.filters button.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+.actions {
+  display: flex;
+  gap: 5px;
+}
+.edit-btn {
+  background: #ffc107;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.save-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-left: 5px;
+}
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-left: 5px;
+}
+.edit-mode {
+  display: flex;
+  width: 100%;
+}
+.edit-mode input {
+  flex: 1;
+  padding: 0.4rem;
+}
